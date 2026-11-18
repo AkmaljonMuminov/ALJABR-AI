@@ -11,7 +11,7 @@ Russian and English) and is designed to grow into a public AI platform later.
 | Phase | Module | State |
 |-------|--------|-------|
 | 1 | ALJABR CORE (config, logging, entry point) | **Implemented and unit-tested** |
-| 2 | ALJABR BRAIN (AI provider, conversations) | Planned |
+| 2 | ALJABR BRAIN (AI provider, conversations) | **Implemented and unit-tested** (not yet run against the real OpenAI service) |
 | 3 | ALJABR VOICE (speech-to-text, female voice) | Planned |
 | 4 | ALJABR MEMORY (SQLite, user-approved memory) | Planned |
 | 5 | ALJABR COMMANDS (permission-checked actions) | Planned |
@@ -19,37 +19,49 @@ Russian and English) and is designed to grow into a public AI platform later.
 | 7 | Android interface | Planned |
 | 8 | Public multi-user platform (disabled at first) | Planned |
 
-Phase 1 has been tested on Linux with Python 3.13. It has **not yet been
-verified on an Android device**; see `docs/ANDROID_SETUP.md`.
+Phases 1-2 have been tested on Linux with Python 3.13. They have **not yet been
+verified on an Android device**; see `docs/ANDROID_SETUP.md`. The AI calls were
+tested against fake and local test servers only; a first real call with your own
+key and model is still to be confirmed.
 
 ## Quick start (Termux on Android, or any Python 3.9+)
 
 ```bash
 git clone https://github.com/AkmaljonMuminov/ALJABR-AI.git
 cd ALJABR-AI
-cp .env.example .env          # then edit .env if you want to change settings
+cp .env.example .env          # then set OPENAI_API_KEY and ALJABR_AI_MODEL in .env
 python main.py --check        # system check
-python main.py                # greeting
+python main.py --chat         # chat with the AI (type /exit to quit)
+python main.py --ask "Salom!" # ask a single question
 python -m unittest discover -s tests -t .   # run the tests
 ```
 
-Phase 1 needs **no third-party packages**.
+No third-party packages are needed.
 
 ## Project layout
 
 ```
-main.py            entry point (--check, --version, --env-file)
+main.py            entry point (--check, --chat, --ask, --version, --env-file)
 config/            .env parsing and validated settings
 core/              app lifecycle, secure logging, messages (uz/ru/en), errors
-brain/ voice/ memory/ commands/ security/ api/ database/   (later phases)
+brain/             AI provider interface, OpenAI adapter, conversation, chat loop
+voice/ memory/ commands/ security/ api/ database/   (later phases)
 tests/             unit tests
-docs/              architecture, Phase 1 plan, Android setup
+docs/              architecture, phase plans, Android setup
 ```
 
 ## Security and privacy rules
 
 * Secrets live only in your local `.env` (git-ignored). Never commit it.
-* Logs redact API keys, bearer tokens and `password=...` values.
+* Logs redact API keys, bearer tokens and `password=...` values. Message
+  contents are not written to the log.
+* The API key is sent only to the configured HTTPS address and is never
+  forwarded on redirects (redirects are refused).
+* **Your messages are sent to the AI provider you configure** (OpenAI by
+  default) and are subject to its privacy policy. Do not type passwords or keys
+  into the chat.
+* Conversation history lives in memory only and disappears when the program
+  ends. Persistent, user-approved memory comes in Phase 4.
 * Sensitive actions (sending messages, deleting files, purchases, destructive
   commands) will require explicit user approval (Phase 5).
 * Security scanning is limited to systems you explicitly authorize (Phase 6).
@@ -58,4 +70,5 @@ docs/              architecture, Phase 1 plan, Android setup
 
 * [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
 * [`docs/PHASE1_PLAN.md`](docs/PHASE1_PLAN.md)
+* [`docs/PHASE2_BRAIN.md`](docs/PHASE2_BRAIN.md)
 * [`docs/ANDROID_SETUP.md`](docs/ANDROID_SETUP.md)

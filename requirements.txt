@@ -1,8 +1,8 @@
 # ALJABR AI - runtime dependencies
 #
-# Phase 1 (ALJABR CORE) uses only the Python standard library (Python 3.9+),
-# so nothing needs to be installed. This keeps setup on Android simple.
+# Phase 1 (ALJABR CORE) and Phase 2 (ALJABR BRAIN) use only the Python standard
+# library (Python 3.9+), so nothing needs to be installed. The OpenAI adapter
+# talks to the API with urllib, which keeps setup on Android simple.
 #
-# Later phases will add small, Android-compatible packages here (for example an
-# HTTP client for the AI provider in Phase 2). Each addition must be checked on
-# Android/Termux before it is added.
+# Later phases may add small, Android-compatible packages here. Each addition
+# must be checked on Android/Termux before it is added.

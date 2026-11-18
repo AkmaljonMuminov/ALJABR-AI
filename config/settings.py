@@ -16,6 +16,7 @@ import re
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Mapping, Optional, Tuple
+from urllib.parse import urlparse
 
 from config.env_loader import load_env_file
 from core.errors import ConfigError
@@ -29,6 +30,11 @@ VALID_ENVIRONMENTS = ("development", "production", "test")
 DEFAULT_WAKE_PHRASE = "Salom, ALJABR"
 MAX_WAKE_PHRASE_LENGTH = 60
 MAX_MODEL_LENGTH = 100
+
+DEFAULT_AI_BASE_URL = "https://api.openai.com/v1"
+DEFAULT_AI_TIMEOUT = 30
+DEFAULT_AI_MAX_HISTORY = 20
+_LOCAL_HOSTS = ("localhost", "127.0.0.1", "::1")
 
 _PROVIDER_PATTERN = re.compile(r"^[a-z][a-z0-9_-]{0,31}$")
 _MODEL_PATTERN = re.compile(r"^[A-Za-z0-9._:/\-]*$")
@@ -68,6 +74,9 @@ class Settings:
     openai_api_key: Secret
     log_max_bytes: int = 1_000_000
     log_backup_count: int = 3
+    ai_base_url: str = DEFAULT_AI_BASE_URL
+    ai_timeout: int = DEFAULT_AI_TIMEOUT
+    ai_max_history: int = DEFAULT_AI_MAX_HISTORY
 
     def secret_values(self) -> Tuple[str, ...]:
         """Return raw secret values (used only to redact logs)."""
@@ -92,6 +101,28 @@ def _choice(values, key: str, default: str, allowed: Tuple[str, ...], upper: boo
     if value not in allowed:
         raise ConfigError(f"{key} must be one of {', '.join(allowed)} (got {raw!r})")
     return value
+
+
+def _int_in_range(values, key: str, default: int, minimum: int, maximum: int) -> int:
+    raw = _get(values, key, str(default))
+    try:
+        number = int(raw)
+    except ValueError:
+        raise ConfigError(f"{key} must be a whole number (got {raw!r})") from None
+    if not minimum <= number <= maximum:
+        raise ConfigError(f"{key} must be between {minimum} and {maximum} (got {number})")
+    return number
+
+
+def _base_url(values, key: str, default: str) -> str:
+    """Validate an API base URL: HTTPS, or HTTP only for a local server."""
+    raw = _get(values, key, default).rstrip("/")
+    parsed = urlparse(raw)
+    if parsed.scheme == "https" and parsed.hostname:
+        return raw
+    if parsed.scheme == "http" and parsed.hostname in _LOCAL_HOSTS:
+        return raw
+    raise ConfigError(f"{key} must be an https:// URL (http:// only for localhost)")
 
 
 def load_settings(
@@ -148,4 +179,9 @@ def load_settings(
         ai_provider=provider,
         ai_model=model,
         openai_api_key=Secret(_get(values, "OPENAI_API_KEY")),
+        ai_base_url=_base_url(values, "ALJABR_AI_BASE_URL", DEFAULT_AI_BASE_URL),
+        ai_timeout=_int_in_range(values, "ALJABR_AI_TIMEOUT", DEFAULT_AI_TIMEOUT, 5, 120),
+        ai_max_history=_int_in_range(
+            values, "ALJABR_AI_MAX_HISTORY", DEFAULT_AI_MAX_HISTORY, 2, 200
+        ),
     )

@@ -3,7 +3,7 @@
 Termux is a terminal app that runs real Python on Android. Install it from
 **F-Droid** (https://f-droid.org); the Google Play version is outdated.
 
-> Phase 1 was tested on Linux. Running these steps on your phone is the first
+> Phases 1-2 were tested on Linux. Running these steps on your phone is the first
 > Android verification. Please report any error message you see.
 
 ## 1. Install tools
@@ -25,10 +25,19 @@ cd ALJABR-AI
 
 ```bash
 cp .env.example .env
-nano .env               # optional in Phase 1
+nano .env
 ```
 
-Never share `.env` and never commit it (it is in `.gitignore`).
+For AI chat set these two lines in `.env` (save in nano with Ctrl+O, Enter, then
+exit with Ctrl+X):
+
+```
+OPENAI_API_KEY=your key here
+ALJABR_AI_MODEL=the model name you want to use
+```
+
+Never share `.env`, never paste the key into a chat, and never commit it (it is
+in `.gitignore`).
 
 ## 4. Run and test
 
@@ -36,11 +45,15 @@ Never share `.env` and never commit it (it is in `.gitignore`).
 python main.py --check
 python main.py
 python -m unittest discover -s tests -t .
+python main.py --chat
 ```
 
 Expected: `--check` prints `[OK]` lines and ends with
 "Barcha majburiy tekshiruvlar muvaffaqiyatli."; the unit tests end with `OK`.
-The API key line shows `[ixtiyoriy]` (optional) until Phase 2.
+The model and API key lines show `[ixtiyoriy]` (optional) until you set them.
+In `--chat`, type a message and press Enter; `/clear` forgets the conversation
+and `/exit` quits. If the key or model is missing, the app tells you in Uzbek
+what to add to `.env`.
 
 Optional: `pip install pytest` and run `pytest`.
 
@@ -62,7 +75,7 @@ git config user.name "Your Name"
 git config user.email "you@example.com"
 git add .
 git status              # confirm .env is NOT listed
-git commit -m "Phase 1: ALJABR CORE"
+git commit -m "Describe your change here"
 git push
 ```
 
@@ -73,4 +86,6 @@ git push
 | `python: command not found` | `pkg install python` |
 | `ModuleNotFoundError: config` | Run from the project folder, or use `python /full/path/to/main.py` |
 | Cannot write to data folder | Set `ALJABR_DATA_DIR` in `.env` to a folder you own |
+| "AI xizmatiga ulanib bo'lmadi" (cannot reach AI service) | Check the phone's internet connection; try again |
+| "AI kaliti qabul qilinmadi" (key rejected) | Re-check `OPENAI_API_KEY` in `.env` for typos or extra spaces |
 | Termux is killed in the background | Disable battery optimization for Termux (needed from Phase 3) |

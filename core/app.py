@@ -118,6 +118,20 @@ class Application:
                 )
             )
 
+        model_set = bool(self.settings.ai_model)
+        results.append(
+            CheckResult(
+                self._t("check_ai_model"),
+                model_set,
+                self._t(
+                    "detail_model_set" if model_set else "detail_model_missing",
+                    provider=self.settings.ai_provider,
+                    model=self.settings.ai_model,
+                ),
+                required=False,
+            )
+        )
+
         key_set = bool(self.settings.openai_api_key)
         results.append(
             CheckResult(
