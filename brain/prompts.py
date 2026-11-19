@@ -11,9 +11,24 @@ LANGUAGE_NAMES = {
 }
 
 
-def build_system_prompt(language: str, today: _dt.date) -> str:
-    """Return the system prompt. ``language`` is the user's default language."""
+SPOKEN_STYLE = (
+    "Your reply will be read aloud by a speech engine: keep it short (a few "
+    "sentences), use plain sentences, and do not use markdown, lists, code, "
+    "emojis or links.\n"
+)
+
+
+def build_system_prompt(language: str, today: _dt.date, spoken: bool = False) -> str:
+    """Return the system prompt. ``language`` is the user's default language.
+
+    With ``spoken=True`` the model is asked for short, speech-friendly replies.
+    """
     language_name = LANGUAGE_NAMES.get(language, LANGUAGE_NAMES["uz"])
+    prompt = _base_prompt(language_name, today)
+    return prompt + "\n" + SPOKEN_STYLE.rstrip("\n") if spoken else prompt
+
+
+def _base_prompt(language_name: str, today: _dt.date) -> str:
     return (
         "You are ALJABR AI, a personal AI assistant. "
         "Your voice is calm, professional and concise.\n"

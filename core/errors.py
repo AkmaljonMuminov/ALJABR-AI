@@ -38,5 +38,17 @@ class ProviderError(AljabrError):
         self.status = status
 
 
+class VoiceError(AljabrError):
+    """Raised when speech input or output fails.
+
+    ``code``: ``unavailable`` (tool not installed), ``permission`` (no microphone
+    access), ``timeout``, ``failed``, or ``closed`` (text input ended; not a fault).
+    """
+
+    def __init__(self, message: str, code: str = "failed") -> None:
+        super().__init__(message)
+        self.code = code
+
+
 class ProviderNotConfiguredError(ProviderError):
     """Raised when the provider cannot be used because settings are missing."""

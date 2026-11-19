@@ -132,6 +132,19 @@ class Application:
             )
         )
 
+        from voice.factory import MODE_TERMUX, detect_mode, termux_tools_present
+
+        voice_mode = detect_mode(self.settings)
+        voice_ok = voice_mode == MODE_TERMUX and termux_tools_present()
+        results.append(
+            CheckResult(
+                self._t("check_voice"),
+                voice_ok,
+                self._t("detail_voice_termux" if voice_ok else "detail_voice_console"),
+                required=False,
+            )
+        )
+
         key_set = bool(self.settings.openai_api_key)
         results.append(
             CheckResult(

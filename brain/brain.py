@@ -30,16 +30,18 @@ class Brain:
         max_input_chars: int = MAX_INPUT_CHARS,
         logger: Optional[logging.Logger] = None,
         today: Callable[[], _dt.date] = _dt.date.today,
+        spoken: bool = False,
     ) -> None:
         self.provider = provider
         self.language = language
+        self.spoken = spoken
         self.max_input_chars = max_input_chars
         self.conversation = Conversation(max_history)
         self.logger = logger or get_logger("brain")
         self._today = today
 
     def system_prompt(self) -> str:
-        return build_system_prompt(self.language, self._today())
+        return build_system_prompt(self.language, self._today(), self.spoken)
 
     def reset(self) -> None:
         """Forget the current conversation."""

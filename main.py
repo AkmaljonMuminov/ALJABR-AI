@@ -6,6 +6,7 @@ Usage:
     python main.py --check         # run system checks (exit code 0 if all pass)
     python main.py --chat          # interactive text chat with the AI
     python main.py --ask "Savol"   # ask one question and print the answer
+    python main.py --voice         # push-to-talk voice conversation
     python main.py --version
     python main.py --env-file /path/to/.env
 """
@@ -23,15 +24,18 @@ from brain.factory import create_provider
 from config.settings import load_settings
 from core import APP_NAME, __version__
 from core.app import Application
-from core.errors import ConfigError, InputError, ProviderError
+from core.errors import ConfigError, InputError, ProviderError, VoiceError
 from core.logging_setup import get_logger, setup_logging
 from core.messages import DEFAULT_LANGUAGE, t
+from voice.factory import MODE_CONSOLE, create_voice
+from voice.session import VoiceSession, describe_voice_error
 
 EXIT_OK = 0
 EXIT_ERROR = 1
 EXIT_CONFIG = 2
 EXIT_CHECK_FAILED = 3
 EXIT_AI = 4
+EXIT_VOICE = 5
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -39,17 +43,36 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--check", action="store_true", help="run system checks and exit")
     parser.add_argument("--chat", action="store_true", help="start an interactive AI chat")
     parser.add_argument("--ask", metavar="TEXT", default=None, help="ask one question and exit")
+    parser.add_argument("--voice", action="store_true", help="start a push-to-talk voice chat")
     parser.add_argument("--version", action="store_true", help="show version and exit")
     parser.add_argument("--env-file", type=Path, default=None, help="path to a .env file")
     return parser
 
 
-def _build_brain(settings) -> Brain:
+def _build_brain(settings, spoken: bool = False) -> Brain:
     return Brain(
         create_provider(settings),
         language=settings.language,
         max_history=settings.ai_max_history,
+        spoken=spoken,
     )
+
+
+def _run_voice(settings, logger) -> None:
+    brain = _build_brain(settings, spoken=True)  # fails early if key/model is missing
+    backend = create_voice(settings)
+    if backend.mode == MODE_CONSOLE:
+        print(t("voice_console_mode", settings.language))
+    VoiceSession(
+        brain,
+        backend.stt,
+        backend.tts,
+        backend.trigger,
+        language=settings.language,
+        wake_phrase=settings.wake_phrase,
+        require_wake=settings.voice_require_wake,
+        logger=logger.getChild("voice"),
+    ).run()
 
 
 def main(argv: Optional[List[str]] = None) -> int:
@@ -81,6 +104,8 @@ def main(argv: Optional[List[str]] = None) -> int:
             print(_build_brain(settings).ask(args.ask))
         elif args.chat:
             run_chat(_build_brain(settings), settings.language)
+        elif args.voice:
+            _run_voice(settings, logger)
         else:
             print("\n".join(app.banner()))
     except ConfigError as exc:
@@ -90,6 +115,10 @@ def main(argv: Optional[List[str]] = None) -> int:
         logger.info("AI unavailable: code=%s detail=%s", getattr(exc, "code", ""), exc)
         print(describe_error(exc, settings.language), file=sys.stderr)
         exit_code = EXIT_AI
+    except VoiceError as exc:
+        logger.info("Voice unavailable: code=%s detail=%s", exc.code, exc)
+        print(describe_voice_error(exc, settings.language), file=sys.stderr)
+        exit_code = EXIT_VOICE
     except KeyboardInterrupt:
         print(t("interrupted", settings.language))
     except Exception:  # noqa: BLE001 - last-resort handler, details go to the log

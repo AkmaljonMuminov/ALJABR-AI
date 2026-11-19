@@ -12,12 +12,12 @@ MESSAGES = {
     "uz": {
         "greeting": "Salom! Men ALJABR AI — shaxsiy sun'iy intellekt yordamchingizman.",
         "core_ready": (
-            "ALJABR ishga tushdi. AI bilan suhbat uchun: python main.py --chat. "
+            "ALJABR ishga tushdi. AI bilan suhbat: python main.py --chat, ovozli suhbat: python main.py --voice. "
             "Ovoz, xotira va boshqa modullar keyingi bosqichlarda qo'shiladi."
         ),
         "wake_hint": (
             "Uyg'otish iborasi: «{wake_phrase}» "
-            "(ovozli tizim 3-bosqichda faollashadi)."
+            "(ALJABR_VOICE_REQUIRE_WAKE=true bo'lsa, ovozli rejimda ishlatiladi)."
         ),
         "check_title": "Tizim tekshiruvi",
         "check_python": "Python versiyasi",
@@ -64,16 +64,41 @@ MESSAGES = {
         "provider_server": "AI xizmatida vaqtinchalik nosozlik. Keyinroq urinib ko'ring.",
         "provider_bad_response": "AI xizmatidan noto'g'ri javob keldi. Qayta urinib ko'ring.",
         "provider_error": "AI so'rovi bajarilmadi. Tafsilotlar log faylida.",
+        "check_voice": "Ovoz tizimi",
+        "detail_voice_termux": "Termux:API topildi (mikrofon va ovoz)",
+        "detail_voice_console": "matn rejimi (Termux:API topilmadi)",
+        "voice_intro": (
+            "Ovozli rejim. Gapirish uchun Enter bosing, chiqish uchun q yozing."
+        ),
+        "voice_prompt": "[Enter = gapirish, q = chiqish] ",
+        "voice_listening": "Tinglayapman...",
+        "voice_heard": "Siz: {text}",
+        "voice_ready_phrase": "Eshitaman.",
+        "voice_console_mode": (
+            "Termux:API topilmadi, shuning uchun matn rejimida ishlayapman "
+            "(ovoz o'rniga yozasiz va o'qiysiz)."
+        ),
+        "voice_no_speech": "Hech narsa eshitilmadi. Qayta urinib ko'ring.",
+        "voice_unavailable": (
+            "Ovoz xizmati topilmadi. Termux:API ilovasini va "
+            "'pkg install termux-api' ni o'rnating."
+        ),
+        "voice_permission": (
+            "Mikrofon ruxsati yo'q. Telefon sozlamalarida Termux:API ga "
+            "mikrofon ruxsatini bering."
+        ),
+        "voice_timeout": "Ovoz xizmati javob bermadi (vaqt tugadi). Qayta urinib ko'ring.",
+        "voice_failed": "Ovoz tizimida xatolik. Tafsilotlar log faylida.",
     },
     "ru": {
         "greeting": "Здравствуйте! Я ALJABR AI — ваш персональный ИИ-ассистент.",
         "core_ready": (
-            "ALJABR запущен. Для чата с ИИ: python main.py --chat. "
+            "ALJABR запущен. Чат с ИИ: python main.py --chat, голосовой чат: python main.py --voice. "
             "Голос, память и другие модули появятся на следующих этапах."
         ),
         "wake_hint": (
             "Фраза активации: «{wake_phrase}» "
-            "(голосовая система будет включена на этапе 3)."
+            "(используется в голосовом режиме при ALJABR_VOICE_REQUIRE_WAKE=true)."
         ),
         "check_title": "Проверка системы",
         "check_python": "Версия Python",
@@ -112,16 +137,41 @@ MESSAGES = {
         "provider_server": "Временная неполадка сервиса ИИ. Попробуйте позже.",
         "provider_bad_response": "Сервис ИИ вернул некорректный ответ. Попробуйте ещё раз.",
         "provider_error": "Запрос к ИИ не выполнен. Подробности в файле логов.",
+        "check_voice": "Голосовая система",
+        "detail_voice_termux": "Termux:API найден (микрофон и голос)",
+        "detail_voice_console": "текстовый режим (Termux:API не найден)",
+        "voice_intro": (
+            "Голосовой режим. Нажмите Enter, чтобы говорить, или введите q для выхода."
+        ),
+        "voice_prompt": "[Enter = говорить, q = выход] ",
+        "voice_listening": "Слушаю...",
+        "voice_heard": "Вы: {text}",
+        "voice_ready_phrase": "Слушаю вас.",
+        "voice_console_mode": (
+            "Termux:API не найден, поэтому работаю в текстовом режиме "
+            "(вы пишете и читаете вместо голоса)."
+        ),
+        "voice_no_speech": "Ничего не слышно. Попробуйте ещё раз.",
+        "voice_unavailable": (
+            "Голосовой сервис не найден. Установите приложение Termux:API и "
+            "выполните 'pkg install termux-api'."
+        ),
+        "voice_permission": (
+            "Нет доступа к микрофону. Дайте Termux:API разрешение на микрофон "
+            "в настройках телефона."
+        ),
+        "voice_timeout": "Голосовой сервис не ответил (время истекло). Попробуйте ещё раз.",
+        "voice_failed": "Ошибка голосовой системы. Подробности в файле логов.",
     },
     "en": {
         "greeting": "Hello! I am ALJABR AI, your personal AI assistant.",
         "core_ready": (
-            "ALJABR is running. To chat with the AI: python main.py --chat. "
+            "ALJABR is running. AI chat: python main.py --chat, voice chat: python main.py --voice. "
             "Voice, memory and other modules arrive in later phases."
         ),
         "wake_hint": (
             "Wake phrase: “{wake_phrase}” "
-            "(the voice system is enabled in Phase 3)."
+            "(used in voice mode when ALJABR_VOICE_REQUIRE_WAKE=true)."
         ),
         "check_title": "System check",
         "check_python": "Python version",
@@ -158,6 +208,29 @@ MESSAGES = {
         "provider_server": "The AI service has a temporary problem. Try again later.",
         "provider_bad_response": "The AI service returned an invalid reply. Please try again.",
         "provider_error": "The AI request failed. See the log file for details.",
+        "check_voice": "Voice system",
+        "detail_voice_termux": "Termux:API found (microphone and speech)",
+        "detail_voice_console": "text mode (Termux:API not found)",
+        "voice_intro": "Voice mode. Press Enter to speak, or type q to quit.",
+        "voice_prompt": "[Enter = speak, q = quit] ",
+        "voice_listening": "Listening...",
+        "voice_heard": "You: {text}",
+        "voice_ready_phrase": "I'm listening.",
+        "voice_console_mode": (
+            "Termux:API was not found, so I am running in text mode "
+            "(you type and read instead of speaking)."
+        ),
+        "voice_no_speech": "I did not hear anything. Please try again.",
+        "voice_unavailable": (
+            "Voice service not found. Install the Termux:API app and run "
+            "'pkg install termux-api'."
+        ),
+        "voice_permission": (
+            "No microphone permission. Grant Termux:API the microphone permission "
+            "in your phone settings."
+        ),
+        "voice_timeout": "The voice service did not respond (timed out). Please try again.",
+        "voice_failed": "Voice system error. See the log file for details.",
     },
 }
 

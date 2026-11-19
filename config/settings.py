@@ -36,6 +36,14 @@ DEFAULT_AI_TIMEOUT = 30
 DEFAULT_AI_MAX_HISTORY = 20
 _LOCAL_HOSTS = ("localhost", "127.0.0.1", "::1")
 
+VOICE_BACKENDS = ("auto", "termux", "console")
+DEFAULT_TTS_PITCH = 1.1   # slightly raised for a female-sounding voice (verify on device)
+DEFAULT_TTS_RATE = 0.95   # slightly slower for a calm delivery
+DEFAULT_STT_TIMEOUT = 20
+_TOKEN_PATTERN = re.compile(r"^[A-Za-z0-9._-]{0,64}$")
+_TRUE_VALUES = ("1", "true", "yes", "on")
+_FALSE_VALUES = ("0", "false", "no", "off", "")
+
 _PROVIDER_PATTERN = re.compile(r"^[a-z][a-z0-9_-]{0,31}$")
 _MODEL_PATTERN = re.compile(r"^[A-Za-z0-9._:/\-]*$")
 
@@ -77,6 +85,14 @@ class Settings:
     ai_base_url: str = DEFAULT_AI_BASE_URL
     ai_timeout: int = DEFAULT_AI_TIMEOUT
     ai_max_history: int = DEFAULT_AI_MAX_HISTORY
+    voice_backend: str = "auto"
+    tts_language: str = "uz"
+    tts_region: str = ""
+    tts_engine: str = ""
+    tts_pitch: float = DEFAULT_TTS_PITCH
+    tts_rate: float = DEFAULT_TTS_RATE
+    stt_timeout: int = DEFAULT_STT_TIMEOUT
+    voice_require_wake: bool = False
 
     def secret_values(self) -> Tuple[str, ...]:
         """Return raw secret values (used only to redact logs)."""
@@ -123,6 +139,34 @@ def _base_url(values, key: str, default: str) -> str:
     if parsed.scheme == "http" and parsed.hostname in _LOCAL_HOSTS:
         return raw
     raise ConfigError(f"{key} must be an https:// URL (http:// only for localhost)")
+
+
+def _float_in_range(values, key: str, default: float, minimum: float, maximum: float) -> float:
+    raw = _get(values, key, str(default))
+    try:
+        number = float(raw)
+    except ValueError:
+        raise ConfigError(f"{key} must be a number (got {raw!r})") from None
+    if not minimum <= number <= maximum:
+        raise ConfigError(f"{key} must be between {minimum} and {maximum} (got {number})")
+    return number
+
+
+def _bool(values, key: str, default: bool = False) -> bool:
+    raw = _get(values, key, "true" if default else "false").lower()
+    if raw in _TRUE_VALUES:
+        return True
+    if raw in _FALSE_VALUES:
+        return False
+    raise ConfigError(f"{key} must be true or false (got {raw!r})")
+
+
+def _token(values, key: str, default: str) -> str:
+    """A short identifier (language, region, engine package) with no spaces or symbols."""
+    raw = _get(values, key, default)
+    if not _TOKEN_PATTERN.match(raw):
+        raise ConfigError(f"{key} may only contain letters, digits, '.', '_' and '-'")
+    return raw
 
 
 def load_settings(
@@ -184,4 +228,12 @@ def load_settings(
         ai_max_history=_int_in_range(
             values, "ALJABR_AI_MAX_HISTORY", DEFAULT_AI_MAX_HISTORY, 2, 200
         ),
+        voice_backend=_choice(values, "ALJABR_VOICE_BACKEND", "auto", VOICE_BACKENDS),
+        tts_language=_token(values, "ALJABR_TTS_LANGUAGE", "uz") or "uz",
+        tts_region=_token(values, "ALJABR_TTS_REGION", ""),
+        tts_engine=_token(values, "ALJABR_TTS_ENGINE", ""),
+        tts_pitch=_float_in_range(values, "ALJABR_TTS_PITCH", DEFAULT_TTS_PITCH, 0.5, 2.0),
+        tts_rate=_float_in_range(values, "ALJABR_TTS_RATE", DEFAULT_TTS_RATE, 0.5, 2.0),
+        stt_timeout=_int_in_range(values, "ALJABR_STT_TIMEOUT", DEFAULT_STT_TIMEOUT, 5, 60),
+        voice_require_wake=_bool(values, "ALJABR_VOICE_REQUIRE_WAKE", False),
     )

@@ -29,8 +29,9 @@
 ## Dependency direction
 
 ```
-main.py -> core.app, brain.*, config, core.*   (later also voice, memory, commands, security)
-brain   -> core (errors, logging); never imports config or main
+main.py -> core.app, brain.*, voice.*, config, core.*   (later also memory, commands, security)
+voice   -> brain (Brain, describe_error), core; never imports config or main
+brain   -> core (errors, logging); never imports config, voice or main
 config  -> core.errors only
 core/__init__.py and core/errors.py import nothing from the project
 ```
@@ -49,7 +50,8 @@ core/__init__.py and core/errors.py import nothing from the project
 * `core/messages.py` - all user-facing text in Uzbek, Russian and English.
 * `core/app.py` - `Application` (start/stop, banner, system checks).
 * `main.py` - CLI with exit codes: 0 ok, 1 unexpected error, 2 configuration
-  error, 3 a required check failed, 4 the AI request could not be completed.
+  error, 3 a required check failed, 4 the AI request could not be completed,
+  5 the voice system is unavailable (missing tools or microphone permission).
 
 ## Phase 2 components (ALJABR BRAIN)
 
@@ -62,6 +64,17 @@ See [`PHASE2_BRAIN.md`](PHASE2_BRAIN.md) for details.
 * `brain/brain.py` - `Brain.ask()`: validation, system prompt, history, rollback on failure.
 * `brain/factory.py` - `create_provider(settings)`; add new providers to `PROVIDERS`.
 * `brain/cli.py` - text chat loop and localized error messages.
+
+## Phase 3 components (ALJABR VOICE)
+
+See [`PHASE3_VOICE.md`](PHASE3_VOICE.md) for details.
+
+* `voice/interfaces.py` - `SpeechToText` / `TextToSpeech`; the session depends only on these.
+* `voice/termux.py`, `voice/console.py` - Android (Termux:API) and text-mode backends.
+* `voice/runner.py` - shell-free command runner with timeout.
+* `voice/wake.py`, `voice/state.py` - wake phrase matching and the state machine.
+* `voice/activation.py` - `ActivationTrigger`: push-to-talk now, background wake later.
+* `voice/session.py` - the turn loop; `voice/factory.py` - backend selection.
 
 ## Design decisions for later phases
 
