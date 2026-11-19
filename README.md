@@ -1,81 +1,88 @@
 # ALJABR AI
 
-**Intelligence. Control. Independence.**
+**Intelligence. Control. Independence.** (Aql. Nazorat. Mustaqillik.)
 
-ALJABR AI is a modular, voice-controlled personal AI assistant. It starts as a
-private assistant for one user on an Android smartphone (Uzbek first, with
-Russian and English) and is designed to grow into a public AI platform later.
+*English version: [README.en.md](README.en.md)*
 
-## Status
+ALJABR AI — modulli, ovoz bilan boshqariladigan shaxsiy sun'iy intellekt
+yordamchisi. U avval bitta foydalanuvchi uchun Android smartfonda ishlaydi
+(asosiy til — o'zbek, qo'shimcha tillar — rus va ingliz) va keyinchalik ommaviy
+AI platformasiga aylanishi mumkin bo'lgan tarzda loyihalangan.
 
-| Phase | Module | State |
-|-------|--------|-------|
-| 1 | ALJABR CORE (config, logging, entry point) | **Implemented and unit-tested** |
-| 2 | ALJABR BRAIN (AI provider, conversations) | **Implemented and unit-tested** (not yet run against the real OpenAI service) |
-| 3 | ALJABR VOICE (push-to-talk, speech in/out) | **Implemented and unit-tested** (not yet tried on a phone) |
-| 4 | ALJABR MEMORY (SQLite, user-approved memory) | Planned |
-| 5 | ALJABR COMMANDS (permission-checked actions) | Planned |
-| 6 | ALJABR SECURITY (authorized defensive monitoring) | Planned |
-| 7 | Android interface | Planned |
-| 8 | Public multi-user platform (disabled at first) | Planned |
+## Holat
 
-Phases 1-3 have been tested on Linux with Python 3.13. They have **not yet been
-verified on an Android device**; see `docs/ANDROID_SETUP.md`. The AI calls were
-tested against fake and local test servers only; a first real call with your own
-key and model is still to be confirmed. Voice was tested with fake speech engines
-and fake `termux-*` programs; real microphone, speaker and Uzbek speech quality
-still need a test on your phone.
+| Bosqich | Modul | Holati |
+|---------|-------|--------|
+| 1 | ALJABR CORE (sozlamalar, log, ishga tushirish) | **Tayyor va testlangan** |
+| 2 | ALJABR BRAIN (AI provayder, suhbat) | **Tayyor va testlangan** (haqiqiy OpenAI xizmatida hali sinalmagan) |
+| 3 | ALJABR VOICE (push-to-talk, ovoz kirish/chiqish) | **Tayyor va testlangan** (telefonda hali sinalmagan) |
+| 4 | ALJABR MEMORY (SQLite, ruxsat bilan eslab qolish) | Rejada |
+| 5 | ALJABR COMMANDS (ruxsat nazoratidagi buyruqlar) | Rejada |
+| 6 | ALJABR SECURITY (ruxsat etilgan himoya monitoringi) | Rejada |
+| 7 | Android interfeysi | Rejada |
+| 8 | Ommaviy ko'p foydalanuvchili platforma (dastlab o'chiq) | Rejada |
 
-## Quick start (Termux on Android, or any Python 3.9+)
+1–3-bosqichlar Linux va Python 3.13 da testlangan. Ular **Android qurilmada hali
+tekshirilmagan**; qarang: `docs/ANDROID_SETUP.md`. AI so'rovlari faqat soxta va
+mahalliy test serverlarida sinalgan; o'z kalitingiz va modelingiz bilan birinchi
+haqiqiy so'rov hali tasdiqlanmagan. Ovoz soxta nutq dvigatellari va soxta
+`termux-*` dasturlar bilan sinalgan; haqiqiy mikrofon, dinamik va o'zbekcha nutq
+sifati telefoningizda tekshirilishi kerak.
+
+## Tez boshlash (Android'da Termux yoki istalgan Python 3.9+)
 
 ```bash
 git clone https://github.com/AkmaljonMuminov/ALJABR-AI.git
 cd ALJABR-AI
-cp .env.example .env          # then set OPENAI_API_KEY and ALJABR_AI_MODEL in .env
-python main.py --check        # system check
-python main.py --chat         # chat with the AI (type /exit to quit)
-python main.py --ask "Salom!" # ask a single question
-python main.py --voice        # push-to-talk voice chat (text mode without Termux:API)
-python -m unittest discover -s tests -t .   # run the tests
+cp .env.example .env          # keyin .env da OPENAI_API_KEY va ALJABR_AI_MODEL ni kiriting
+python main.py --check        # tizim tekshiruvi
+python main.py --chat         # AI bilan suhbat (chiqish: /exit)
+python main.py --ask "Salom!" # bitta savol berish
+python main.py --voice        # ovozli suhbat (Termux:API bo'lmasa matn rejimi)
+python -m unittest discover -s tests -t .   # testlarni ishga tushirish
 ```
 
-No third-party packages are needed.
+Uchinchi tomon paketlari kerak emas.
 
-## Project layout
+## Loyiha tuzilmasi
 
 ```
-main.py            entry point (--check, --chat, --ask, --voice, --version, --env-file)
-config/            .env parsing and validated settings
-core/              app lifecycle, secure logging, messages (uz/ru/en), errors
-brain/             AI provider interface, OpenAI adapter, conversation, chat loop
-voice/             speech input/output, wake phrase, push-to-talk session
-memory/ commands/ security/ api/ database/   (later phases)
-tests/             unit tests
-docs/              architecture, phase plans, Android setup
+main.py            kirish nuqtasi (--check, --chat, --ask, --voice, --version, --env-file)
+config/            .env o'qish va tekshirilgan sozlamalar
+core/              ilova hayot sikli, xavfsiz log, xabarlar (uz/ru/en), xatolar
+brain/             AI provayder interfeysi, OpenAI adapteri, suhbat, chat sikli
+voice/             nutq kirish/chiqish, uyg'otish iborasi, push-to-talk sessiyasi
+memory/ commands/ security/ api/ database/   (keyingi bosqichlar)
+tests/             unit testlar
+docs/              arxitektura, bosqich rejalari, Android o'rnatish
 ```
 
-## Security and privacy rules
+## Xavfsizlik va maxfiylik qoidalari
 
-* Secrets live only in your local `.env` (git-ignored). Never commit it.
-* Logs redact API keys, bearer tokens and `password=...` values. Message
-  contents are not written to the log.
-* The API key is sent only to the configured HTTPS address and is never
-  forwarded on redirects (redirects are refused).
-* **Your messages are sent to the AI provider you configure** (OpenAI by
-  default) and are subject to its privacy policy. Do not type passwords or keys
-  into the chat.
-* The microphone is used only after you press Enter (push-to-talk); there is no
-  background listening. What you say is never written to the log.
-* Conversation history lives in memory only and disappears when the program
-  ends. Persistent, user-approved memory comes in Phase 4.
-* Sensitive actions (sending messages, deleting files, purchases, destructive
-  commands) will require explicit user approval (Phase 5).
-* Security scanning is limited to systems you explicitly authorize (Phase 6).
+* Maxfiy ma'lumotlar faqat sizning mahalliy `.env` faylingizda turadi
+  (`.gitignore` ga kiritilgan). Uni hech qachon commit qilmang.
+* Loglarda API kalitlari, bearer tokenlar va `password=...` qiymatlari
+  yashiriladi. Xabarlar mazmuni logga yozilmaydi.
+* API kaliti faqat sozlangan HTTPS manzilga yuboriladi va yo'naltirishlarda
+  (redirect) hech qachon boshqa manzilga uzatilmaydi (redirectlar rad etiladi).
+* **Xabarlaringiz siz sozlagan AI provayderga yuboriladi** (standart bo'yicha
+  OpenAI) va uning maxfiylik siyosatiga bo'ysunadi. Chatga parol yoki kalit
+  yozmang.
+* Mikrofon faqat Enter bosgandan keyin ishlatiladi (push-to-talk); fonda
+  tinglash yo'q. Aytgan gapingiz logga yozilmaydi.
+* Suhbat tarixi faqat xotirada turadi va dastur tugagach yo'qoladi. Doimiy,
+  foydalanuvchi ruxsati bilan ishlaydigan xotira 4-bosqichda qo'shiladi.
+* Nozik amallar (xabar yuborish, fayl o'chirish, xarid, xavfli buyruqlar) aniq
+  foydalanuvchi tasdig'ini talab qiladi (5-bosqich).
+* Xavfsizlik skanerlash faqat siz aniq ruxsat bergan tizimlar bilan cheklanadi
+  (6-bosqich).
 
-## Documentation
+## Hujjatlar
 
-* [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
-* [`docs/PHASE1_PLAN.md`](docs/PHASE1_PLAN.md)
-* [`docs/PHASE2_BRAIN.md`](docs/PHASE2_BRAIN.md)
-* [`docs/PHASE3_VOICE.md`](docs/PHASE3_VOICE.md)
-* [`docs/ANDROID_SETUP.md`](docs/ANDROID_SETUP.md)
+* [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — arxitektura
+* [`docs/PHASE1_PLAN.md`](docs/PHASE1_PLAN.md) — 1-bosqich rejasi
+* [`docs/PHASE2_BRAIN.md`](docs/PHASE2_BRAIN.md) — AI miya
+* [`docs/PHASE3_VOICE.md`](docs/PHASE3_VOICE.md) — ovoz tizimi
+* [`docs/ANDROID_SETUP.md`](docs/ANDROID_SETUP.md) — Android'da o'rnatish
+
+*Eslatma: `docs/` ichidagi hujjatlar hozircha inglizcha.*
