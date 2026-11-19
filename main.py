@@ -24,9 +24,13 @@ from brain.factory import create_provider
 from config.settings import load_settings
 from core import APP_NAME, __version__
 from core.app import Application
-from core.errors import ConfigError, InputError, ProviderError, VoiceError
+from core.errors import ConfigError, DatabaseError, InputError, ProviderError, VoiceError
 from core.logging_setup import get_logger, setup_logging
 from core.messages import DEFAULT_LANGUAGE, t
+from database.connection import open_database
+from memory.commands import make_memory_handler
+from memory.context import make_context_provider
+from memory.store import MemoryStore
 from voice.factory import MODE_CONSOLE, create_voice
 from voice.session import VoiceSession, describe_voice_error
 
@@ -49,17 +53,46 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def _build_brain(settings, spoken: bool = False) -> Brain:
+def _open_memory(settings, logger) -> Optional[MemoryStore]:
+    """Open long-term memory, or return None (memory off or database unusable).
+
+    A database problem never stops the assistant: it just runs without memory.
+    """
+    if not settings.memory_enabled:
+        return None
+    try:
+        conn = open_database(settings.db_path)
+    except DatabaseError as exc:
+        logger.warning("Memory database unavailable: %s", exc)
+        print(t("mem_unavailable", settings.language), file=sys.stderr)
+        return None
+    return MemoryStore(conn, settings.user_id)
+
+
+def _build_brain(settings, spoken: bool = False, memory: Optional[MemoryStore] = None) -> Brain:
+    context = None
+    if memory is not None and settings.memory_in_prompt:
+        context = make_context_provider(memory, settings.memory_max_prompt_items)
     return Brain(
         create_provider(settings),
         language=settings.language,
         max_history=settings.ai_max_history,
         spoken=spoken,
+        memory_context=context,
     )
 
 
-def _run_voice(settings, logger) -> None:
-    brain = _build_brain(settings, spoken=True)  # fails early if key/model is missing
+def _run_chat(settings, logger, memory: Optional[MemoryStore]) -> None:
+    brain = _build_brain(settings, memory=memory)
+    handler = hint = None
+    if memory is not None:
+        handler = make_memory_handler(memory, settings.language, logger.getChild("memory"))
+        hint = t("mem_hint", settings.language)
+    run_chat(brain, settings.language, command_handler=handler, hint=hint or "")
+
+
+def _run_voice(settings, logger, memory: Optional[MemoryStore]) -> None:
+    brain = _build_brain(settings, spoken=True, memory=memory)  # fails early if key/model missing
     backend = create_voice(settings)
     if backend.mode == MODE_CONSOLE:
         print(t("voice_console_mode", settings.language))
@@ -92,6 +125,7 @@ def main(argv: Optional[List[str]] = None) -> int:
     logger = get_logger()
     app = Application(settings, logger)
     exit_code = EXIT_OK
+    memory: Optional[MemoryStore] = None
 
     try:
         app.start()
@@ -101,11 +135,14 @@ def main(argv: Optional[List[str]] = None) -> int:
             if not app.checks_passed(results):
                 exit_code = EXIT_CHECK_FAILED
         elif args.ask is not None:
-            print(_build_brain(settings).ask(args.ask))
+            memory = _open_memory(settings, logger)
+            print(_build_brain(settings, memory=memory).ask(args.ask))
         elif args.chat:
-            run_chat(_build_brain(settings), settings.language)
+            memory = _open_memory(settings, logger)
+            _run_chat(settings, logger, memory)
         elif args.voice:
-            _run_voice(settings, logger)
+            memory = _open_memory(settings, logger)
+            _run_voice(settings, logger, memory)
         else:
             print("\n".join(app.banner()))
     except ConfigError as exc:
@@ -126,6 +163,8 @@ def main(argv: Optional[List[str]] = None) -> int:
         print(t("unexpected_error", settings.language), file=sys.stderr)
         exit_code = EXIT_ERROR
     finally:
+        if memory is not None:
+            memory.close()
         app.stop()
 
     return exit_code

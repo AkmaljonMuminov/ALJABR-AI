@@ -31,17 +31,34 @@ class Brain:
         logger: Optional[logging.Logger] = None,
         today: Callable[[], _dt.date] = _dt.date.today,
         spoken: bool = False,
+        memory_context: Optional[Callable[[str], str]] = None,
     ) -> None:
         self.provider = provider
         self.language = language
         self.spoken = spoken
+        #: ``memory_context(question) -> text`` adds saved notes to the prompt.
+        self.memory_context = memory_context
         self.max_input_chars = max_input_chars
         self.conversation = Conversation(max_history)
         self.logger = logger or get_logger("brain")
         self._today = today
 
     def system_prompt(self) -> str:
-        return build_system_prompt(self.language, self._today(), self.spoken)
+        return build_system_prompt(
+            self.language, self._today(), self.spoken, memory=self.memory_context is not None
+        )
+
+    def _system_with_memory(self, question: str) -> str:
+        """System prompt plus the saved notes relevant to ``question`` (if any)."""
+        prompt = self.system_prompt()
+        if self.memory_context is None:
+            return prompt
+        try:
+            block = self.memory_context(question)
+        except Exception as exc:  # noqa: BLE001 - memory must never block an answer
+            self.logger.warning("Memory lookup failed: %s", type(exc).__name__)
+            return prompt
+        return f"{prompt}\n\n{block}" if block else prompt
 
     def reset(self) -> None:
         """Forget the current conversation."""
@@ -64,7 +81,9 @@ class Brain:
         self.conversation.add_user(text)
         started = time.monotonic()
         try:
-            response = self.provider.generate(self.conversation.with_system(self.system_prompt()))
+            response = self.provider.generate(
+                self.conversation.with_system(self._system_with_memory(text))
+            )
         except ProviderError as exc:
             self.conversation.pop_last()
             self.logger.info(

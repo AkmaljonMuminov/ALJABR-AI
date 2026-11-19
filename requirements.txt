@@ -1,7 +1,7 @@
 # ALJABR AI - runtime dependencies
 #
-# Phases 1-3 (CORE, BRAIN, VOICE) use only the Python standard library
-# (Python 3.9+), so nothing needs to be installed. The OpenAI adapter talks to
+# Phases 1-4 (CORE, BRAIN, VOICE, MEMORY) use only the Python standard library
+# (Python 3.9+, including sqlite3), so nothing needs to be installed. The OpenAI adapter talks to
 # the API with urllib, and speech uses the Termux:API command-line tools, which
 # keeps setup on Android simple.
 #

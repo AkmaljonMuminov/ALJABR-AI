@@ -118,6 +118,8 @@ class Application:
                 )
             )
 
+        results.append(self._check_memory())
+
         model_set = bool(self.settings.ai_model)
         results.append(
             CheckResult(
@@ -155,6 +157,36 @@ class Application:
             )
         )
         return results
+
+    def _check_memory(self) -> CheckResult:
+        """Open the memory database and count notes (optional check)."""
+        name = self._t("check_memory")
+        if not self.settings.memory_enabled:
+            return CheckResult(name, False, self._t("detail_memory_off"), required=False)
+        from core.errors import AljabrError
+        from database.connection import open_database
+        from memory.store import MemoryStore
+
+        path = self.settings.db_path
+        try:
+            conn = open_database(path)
+        except AljabrError as exc:
+            self.logger.warning("Memory database check failed: %s", exc)
+            return CheckResult(
+                name, False, self._t("detail_memory_fail", path=path), required=False
+            )
+        store = MemoryStore(conn, self.settings.user_id)
+        try:
+            count = store.count()
+        except AljabrError as exc:
+            self.logger.warning("Memory database check failed: %s", exc)
+            return CheckResult(
+                name, False, self._t("detail_memory_fail", path=path), required=False
+            )
+        finally:
+            store.close()
+        return CheckResult(name, True, self._t("detail_memory_ok", path=path, count=count),
+                           required=False)
 
     def format_report(self, results: List[CheckResult]) -> List[str]:
         """Turn check results into printable lines, ending with a verdict."""

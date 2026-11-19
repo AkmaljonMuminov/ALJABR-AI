@@ -89,6 +89,40 @@ MESSAGES = {
         ),
         "voice_timeout": "Ovoz xizmati javob bermadi (vaqt tugadi). Qayta urinib ko'ring.",
         "voice_failed": "Ovoz tizimida xatolik. Tafsilotlar log faylida.",
+        "mem_hint": "Xotira: /remember <matn>, /memories, /edit <id> <matn>, /forget <id>.",
+        "mem_saved": "Eslab qoldim (#{id}): {text}",
+        "mem_updated": "Yangilandi (#{id}): {text}",
+        "mem_deleted": "O'chirildi (#{id}).",
+        "mem_list_title": "Eslatmalar ({count}):",
+        "mem_search_title": "Topildi ({count}):",
+        "mem_item": "#{id}: {text}",
+        "mem_more": "... va yana {count} ta (qidirish: /memories so'z).",
+        "mem_none": "Saqlangan eslatmalar yo'q.",
+        "mem_search_none": "Hech narsa topilmadi.",
+        "mem_usage": (
+            "Buyruqlar: /remember <matn> — eslab qolish; /memories [so'z] — ko'rish yoki "
+            "qidirish; /edit <id> <matn> — o'zgartirish; /forget <id> — o'chirish; "
+            "/forget all — hammasini o'chirish."
+        ),
+        "mem_bad_id": "Raqam (id) noto'g'ri. Ro'yxat uchun /memories ni yozing.",
+        "mem_forget_all_confirm": (
+            "Barcha {count} ta eslatma o'chiriladi. Tasdiqlash uchun yozing: /forget all {word}"
+        ),
+        "mem_cleared": "{count} ta eslatma o'chirildi.",
+        "mem_err_empty": "Matn bo'sh bo'lmasligi kerak.",
+        "mem_err_too_long": "Matn juda uzun (ko'pi bilan {limit} belgi).",
+        "mem_err_limit": "Eslatmalar limiti to'ldi ({limit} ta). Ba'zilarini /forget bilan o'chiring.",
+        "mem_err_secret": (
+            "Bu matnda parol, kalit, token yoki karta raqami bo'lishi mumkin, "
+            "shuning uchun saqlanmadi. Bunday ma'lumotlarni eslatmaga yozmang."
+        ),
+        "mem_err_not_found": "Bunday eslatma topilmadi.",
+        "mem_err_storage": "Xotira bazasida xatolik. Tafsilotlar log faylida.",
+        "mem_unavailable": "Xotira bazasi ochilmadi, shuning uchun bu sessiyada xotirasiz ishlayapman.",
+        "check_memory": "Xotira bazasi",
+        "detail_memory_ok": "{path} ({count} ta eslatma)",
+        "detail_memory_off": "o'chirilgan (ALJABR_MEMORY_ENABLED=false)",
+        "detail_memory_fail": "ochib bo'lmadi: {path}",
     },
     "ru": {
         "greeting": "Здравствуйте! Я ALJABR AI — ваш персональный ИИ-ассистент.",
@@ -162,6 +196,40 @@ MESSAGES = {
         ),
         "voice_timeout": "Голосовой сервис не ответил (время истекло). Попробуйте ещё раз.",
         "voice_failed": "Ошибка голосовой системы. Подробности в файле логов.",
+        "mem_hint": "Память: /remember <текст>, /memories, /edit <id> <текст>, /forget <id>.",
+        "mem_saved": "Запомнил (#{id}): {text}",
+        "mem_updated": "Обновлено (#{id}): {text}",
+        "mem_deleted": "Удалено (#{id}).",
+        "mem_list_title": "Заметки ({count}):",
+        "mem_search_title": "Найдено ({count}):",
+        "mem_item": "#{id}: {text}",
+        "mem_more": "... и ещё {count} (поиск: /memories слово).",
+        "mem_none": "Сохранённых заметок нет.",
+        "mem_search_none": "Ничего не найдено.",
+        "mem_usage": (
+            "Команды: /remember <текст> — запомнить; /memories [слово] — показать или "
+            "найти; /edit <id> <текст> — изменить; /forget <id> — удалить; "
+            "/forget all — удалить всё."
+        ),
+        "mem_bad_id": "Неверный номер (id). Список: /memories.",
+        "mem_forget_all_confirm": (
+            "Будут удалены все заметки ({count}). Для подтверждения напишите: /forget all {word}"
+        ),
+        "mem_cleared": "Удалено заметок: {count}.",
+        "mem_err_empty": "Текст не должен быть пустым.",
+        "mem_err_too_long": "Текст слишком длинный (не более {limit} символов).",
+        "mem_err_limit": "Лимит заметок исчерпан ({limit}). Удалите лишние через /forget.",
+        "mem_err_secret": (
+            "В тексте может быть пароль, ключ, токен или номер карты, поэтому он не "
+            "сохранён. Не записывайте такие данные в заметки."
+        ),
+        "mem_err_not_found": "Такой заметки нет.",
+        "mem_err_storage": "Ошибка базы памяти. Подробности в файле логов.",
+        "mem_unavailable": "База памяти не открылась, поэтому в этой сессии я работаю без памяти.",
+        "check_memory": "База памяти",
+        "detail_memory_ok": "{path} (заметок: {count})",
+        "detail_memory_off": "отключена (ALJABR_MEMORY_ENABLED=false)",
+        "detail_memory_fail": "не удалось открыть: {path}",
     },
     "en": {
         "greeting": "Hello! I am ALJABR AI, your personal AI assistant.",
@@ -231,6 +299,40 @@ MESSAGES = {
         ),
         "voice_timeout": "The voice service did not respond (timed out). Please try again.",
         "voice_failed": "Voice system error. See the log file for details.",
+        "mem_hint": "Memory: /remember <text>, /memories, /edit <id> <text>, /forget <id>.",
+        "mem_saved": "Remembered (#{id}): {text}",
+        "mem_updated": "Updated (#{id}): {text}",
+        "mem_deleted": "Deleted (#{id}).",
+        "mem_list_title": "Notes ({count}):",
+        "mem_search_title": "Found ({count}):",
+        "mem_item": "#{id}: {text}",
+        "mem_more": "... and {count} more (search: /memories word).",
+        "mem_none": "No saved notes.",
+        "mem_search_none": "Nothing found.",
+        "mem_usage": (
+            "Commands: /remember <text> - save a note; /memories [word] - list or "
+            "search; /edit <id> <text> - change; /forget <id> - delete; "
+            "/forget all - delete everything."
+        ),
+        "mem_bad_id": "Invalid number (id). Use /memories to see the list.",
+        "mem_forget_all_confirm": (
+            "All {count} notes will be deleted. To confirm, type: /forget all {word}"
+        ),
+        "mem_cleared": "{count} notes deleted.",
+        "mem_err_empty": "The text must not be empty.",
+        "mem_err_too_long": "The text is too long (at most {limit} characters).",
+        "mem_err_limit": "The notes limit is reached ({limit}). Delete some with /forget.",
+        "mem_err_secret": (
+            "This text may contain a password, key, token or card number, so it was "
+            "not saved. Do not put such data in notes."
+        ),
+        "mem_err_not_found": "No such note.",
+        "mem_err_storage": "Memory database error. See the log file for details.",
+        "mem_unavailable": "The memory database could not be opened, so this session runs without memory.",
+        "check_memory": "Memory database",
+        "detail_memory_ok": "{path} ({count} notes)",
+        "detail_memory_off": "disabled (ALJABR_MEMORY_ENABLED=false)",
+        "detail_memory_fail": "cannot open: {path}",
     },
 }
 

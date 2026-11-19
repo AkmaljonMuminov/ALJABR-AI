@@ -1,4 +1,6 @@
-"""ALJABR DATABASE - SQLite access layer shared by memory and security logs.
+"""ALJABR DATABASE - SQLite access layer shared by memory (and later security logs).
 
-Not implemented yet. Planned for Phase 4.
+Modules:
+    migrations   versioned schema (PRAGMA user_version)
+    connection   open_database(path): creates a private file and migrates it
 """

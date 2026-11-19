@@ -3,7 +3,7 @@
 Termux is a terminal app that runs real Python on Android. Install it from
 **F-Droid** (https://f-droid.org); the Google Play version is outdated.
 
-> Phases 1-3 were tested on Linux. Running these steps on your phone is the first
+> Phases 1-4 were tested on Linux. Running these steps on your phone is the first
 > Android verification. Please report any error message you see.
 
 ## 1. Install tools
@@ -76,14 +76,21 @@ python main.py --voice      # press Enter, speak; q quits
 Without Termux:API, `--voice` runs in text mode. Details, including what depends
 on your phone's speech engines, are in `docs/PHASE3_VOICE.md`.
 
-## 6. Update later
+## 6. Memory (Phase 4)
+
+No extra installation: SQLite is part of Python. In `python main.py --chat` use
+`/remember <text>`, `/memories`, `/edit <id> <text>`, `/forget <id>`. Notes are stored
+in `data/aljabr.db`; to back them up, copy that file (never commit it - `data/` is in
+`.gitignore`). `python main.py --check` shows the database and the note count.
+
+## 7. Update later
 
 ```bash
 cd ALJABR-AI
 git pull
 ```
 
-## 7. Publishing your changes from the phone
+## 8. Publishing your changes from the phone
 
 Use a **fine-grained personal access token** limited to this one repository
 with "Contents: read and write". Never paste the token into a chat or a file in
@@ -110,4 +117,5 @@ git push
 | `--voice` says Termux:API not found | Install the Termux:API app and `pkg install termux-api` |
 | "Mikrofon ruxsati yo'q" (no microphone permission) | Allow Microphone for the Termux:API app in Android settings |
 | Speech is not Uzbek or sounds wrong | Check Android settings -> Text-to-speech; adjust `ALJABR_TTS_*` in `.env` |
+| "Xotira bazasi ochilmadi" (memory database not opened) | Check that `ALJABR_DATA_DIR` is writable; if `data/aljabr.db` is damaged, move it away and restart |
 | Termux is killed in the background | Disable battery optimization for Termux (needed from Phase 3) |

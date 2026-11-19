@@ -29,9 +29,10 @@
 ## Dependency direction
 
 ```
-main.py -> core.app, brain.*, voice.*, config, core.*   (later also memory, commands, security)
+main.py -> core.app, brain.*, voice.*, memory.*, database.*, config, core.*   (later also commands, security)
 voice   -> brain (Brain, describe_error), core; never imports config or main
-brain   -> core (errors, logging); never imports config, voice or main
+brain   -> core (errors, logging); never imports config, voice, memory or main
+memory  -> core, database; never imports brain, voice, config or main
 config  -> core.errors only
 core/__init__.py and core/errors.py import nothing from the project
 ```
@@ -75,6 +76,17 @@ See [`PHASE3_VOICE.md`](PHASE3_VOICE.md) for details.
 * `voice/wake.py`, `voice/state.py` - wake phrase matching and the state machine.
 * `voice/activation.py` - `ActivationTrigger`: push-to-talk now, background wake later.
 * `voice/session.py` - the turn loop; `voice/factory.py` - backend selection.
+
+## Phase 4 components (ALJABR MEMORY)
+
+See [`PHASE4_MEMORY.md`](PHASE4_MEMORY.md) for details.
+
+* `database/` - `open_database(path)`: private SQLite file, versioned migrations with rollback.
+* `memory/store.py` - `MemoryStore`, every query filtered by `user_id`.
+* `memory/guard.py` - refuses passwords, keys, tokens, card numbers.
+* `memory/context.py` - picks notes for the prompt; the brain only receives a
+  `memory_context(question) -> text` function, so it never imports `memory`.
+* `memory/commands.py` - `/remember /memories /edit /forget` for the chat loop.
 
 ## Design decisions for later phases
 

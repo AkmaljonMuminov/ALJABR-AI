@@ -50,5 +50,22 @@ class VoiceError(AljabrError):
         self.code = code
 
 
+class DatabaseError(AljabrError):
+    """Raised when the SQLite database cannot be opened, migrated or used."""
+
+
+class MemoryStoreError(AljabrError):
+    """Raised when a memory operation is rejected or fails.
+
+    ``code``: ``empty``, ``too_long``, ``secret`` (looks like a password/key/
+    token/card number), ``limit`` (too many notes), ``not_found`` or
+    ``storage`` (database problem).
+    """
+
+    def __init__(self, message: str, code: str = "storage") -> None:
+        super().__init__(message)
+        self.code = code
+
+
 class ProviderNotConfiguredError(ProviderError):
     """Raised when the provider cannot be used because settings are missing."""

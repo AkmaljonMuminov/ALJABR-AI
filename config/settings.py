@@ -41,6 +41,9 @@ DEFAULT_TTS_PITCH = 1.1   # slightly raised for a female-sounding voice (verify 
 DEFAULT_TTS_RATE = 0.95   # slightly slower for a calm delivery
 DEFAULT_STT_TIMEOUT = 20
 _TOKEN_PATTERN = re.compile(r"^[A-Za-z0-9._-]{0,64}$")
+_USER_ID_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$")
+DEFAULT_USER_ID = "owner"
+DEFAULT_MEMORY_PROMPT_ITEMS = 10
 _TRUE_VALUES = ("1", "true", "yes", "on")
 _FALSE_VALUES = ("0", "false", "no", "off", "")
 
@@ -93,6 +96,15 @@ class Settings:
     tts_rate: float = DEFAULT_TTS_RATE
     stt_timeout: int = DEFAULT_STT_TIMEOUT
     voice_require_wake: bool = False
+    memory_enabled: bool = True
+    memory_in_prompt: bool = True
+    memory_max_prompt_items: int = DEFAULT_MEMORY_PROMPT_ITEMS
+    user_id: str = DEFAULT_USER_ID
+
+    @property
+    def db_path(self) -> Path:
+        """Location of the SQLite database (inside the data directory)."""
+        return self.data_dir / "aljabr.db"
 
     def secret_values(self) -> Tuple[str, ...]:
         """Return raw secret values (used only to redact logs)."""
@@ -169,6 +181,16 @@ def _token(values, key: str, default: str) -> str:
     return raw
 
 
+def _user_id(values, key: str, default: str) -> str:
+    raw = _get(values, key, default)
+    if not _USER_ID_PATTERN.match(raw):
+        raise ConfigError(
+            f"{key} must start with a letter or digit and contain only letters, "
+            "digits, '.', '_' and '-' (max 64 characters)"
+        )
+    return raw
+
+
 def load_settings(
     environ: Optional[Mapping[str, str]] = None,
     base_dir: Optional[Path] = None,
@@ -236,4 +258,10 @@ def load_settings(
         tts_rate=_float_in_range(values, "ALJABR_TTS_RATE", DEFAULT_TTS_RATE, 0.5, 2.0),
         stt_timeout=_int_in_range(values, "ALJABR_STT_TIMEOUT", DEFAULT_STT_TIMEOUT, 5, 60),
         voice_require_wake=_bool(values, "ALJABR_VOICE_REQUIRE_WAKE", False),
+        memory_enabled=_bool(values, "ALJABR_MEMORY_ENABLED", True),
+        memory_in_prompt=_bool(values, "ALJABR_MEMORY_IN_PROMPT", True),
+        memory_max_prompt_items=_int_in_range(
+            values, "ALJABR_MEMORY_MAX_PROMPT_ITEMS", DEFAULT_MEMORY_PROMPT_ITEMS, 1, 50
+        ),
+        user_id=_user_id(values, "ALJABR_USER_ID", DEFAULT_USER_ID),
     )

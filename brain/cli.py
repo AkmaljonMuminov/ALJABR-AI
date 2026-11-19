@@ -31,15 +31,21 @@ def run_chat(
     lang: str,
     input_func: Optional[Callable[[str], str]] = None,
     output: Optional[Callable[[str], None]] = None,
+    command_handler: Optional[Callable[[str], Optional[str]]] = None,
+    hint: str = "",
 ) -> None:
     """Interactive chat loop. Ends on /exit, Ctrl+D or Ctrl+C.
 
     ``input_func`` and ``output`` default to ``input`` and ``print`` (looked up
-    at call time so they can be replaced in tests).
+    at call time so they can be replaced in tests). ``command_handler`` gets
+    every line that starts with ``/`` first; if it returns text, that text is
+    shown and the line is not sent to the AI (used for memory commands).
     """
     read = input_func or input
     write = output or print
     write(t("chat_intro", lang))
+    if hint:
+        write(hint)
     while True:
         try:
             line = read("> ").strip()
@@ -55,6 +61,11 @@ def run_chat(
             brain.reset()
             write(t("history_cleared", lang))
             continue
+        if command_handler is not None and line.startswith("/"):
+            handled = command_handler(line)
+            if handled is not None:
+                write(handled)
+                continue
         try:
             write(brain.ask(line))
         except (InputError, ProviderError) as exc:
